@@ -11,6 +11,27 @@
   <inceptionYear>2009</inceptionYear>
   <description>JTerminal is a terminal emulator for Java's Swing GUI library.</description>
 
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/grahamedgecombe/jterminal</url>
+    <connection>scm:git:git://github.com/grahamedgecombe/jterminal.git/</connection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>graham</id>
+      <name>Graham Edgecombe</name>
+      <email>grahamedgecombe@gmail.com</email>
+    </developer>
+  </developers>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
