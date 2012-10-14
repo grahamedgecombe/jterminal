@@ -57,6 +57,11 @@ public class JTerminal extends JComponent {
 		private static final int CELL_HEIGHT = 12;
 
 		/**
+		 * Inner border width in pixels.
+		 */
+		private int borderWidth = 0;
+
+		/**
 		 * The font.
 		 */
 		private final Font font = new Font("Monospaced", Font.PLAIN, CELL_HEIGHT);
@@ -73,9 +78,26 @@ public class JTerminal extends JComponent {
 			setDoubleBuffered(true);
 		}
 
+		/**
+		 * @return The inner border width, in pixels.
+		 */
+		public int getBorderWidth() {
+			return borderWidth;
+		}
+
+		/**
+		 * Set the inner border width of the terminal component.
+		 * @param borderWidth The width of the border, in pixels.
+		 */
+		public void setBorderWidth(int borderWidth) {
+			this.borderWidth = borderWidth;
+			revalidate();
+		}
+
 		@Override
 		public Dimension getMinimumSize() {
-			return new Dimension(model.getColumns() * CELL_WIDTH, model.getRows() * CELL_HEIGHT);
+			return new Dimension(model.getColumns() * CELL_WIDTH + borderWidth * 2,
+                           model.getRows() * CELL_HEIGHT + borderWidth * 2);
 		}
 
 		@Override
@@ -96,7 +118,7 @@ public class JTerminal extends JComponent {
 			int height = model.getBufferSize();
 
 			g.setColor(model.getDefaultBackgroundColor());
-			g.fillRect(0, 0, width * CELL_WIDTH, height * CELL_HEIGHT);
+			g.fillRect(0, 0, width * CELL_WIDTH + borderWidth * 2, height * CELL_HEIGHT + borderWidth * 2);
 
 			int start = scrollBar == null ? 0 : scrollBar.getValue();
 			for (int y = start; y < height; y++) {
@@ -109,8 +131,8 @@ public class JTerminal extends JComponent {
 					}
 
 					if (cell != null) {
-						int px = x * CELL_WIDTH;
-						int py = (y - start) * CELL_HEIGHT;
+						int px = x * CELL_WIDTH + borderWidth;
+						int py = (y - start) * CELL_HEIGHT + borderWidth;
 
 						g.setColor(cursorHere ? cell.getForegroundColor() : cell.getBackgroundColor());
 						g.fillRect(px, py, CELL_WIDTH, CELL_HEIGHT);
@@ -121,7 +143,6 @@ public class JTerminal extends JComponent {
 				}
 			}
 		}
-
 	}
 
 	/**
@@ -138,6 +159,11 @@ public class JTerminal extends JComponent {
 	 * The current model.
 	 */
 	private TerminalModel model;
+
+	/**
+	 * The current terminal component.
+	 */
+	private Terminal terminal;
 
 	/**
 	 * Creates a terminal with the a new {@link Vt100TerminalModel}.
@@ -160,6 +186,7 @@ public class JTerminal extends JComponent {
 	 */
 	private void init() {
 		setLayout(new BorderLayout(0, 0));
+		this.terminal = new Terminal();
 
 		int rows = model.getRows();
 		int bufferSize = model.getBufferSize();
@@ -175,7 +202,7 @@ public class JTerminal extends JComponent {
 			add(BorderLayout.LINE_END, scrollBar);
 		}
 
-		add(BorderLayout.CENTER, new Terminal());
+		add(BorderLayout.CENTER, terminal);
 
 		repaint();
 	}
@@ -186,6 +213,24 @@ public class JTerminal extends JComponent {
 	 */
 	public TerminalModel getModel() {
 		return model;
+	}
+
+	/**
+	 * Sets the border width of the current terminal component.
+	 * @param borderWidth The width of the border, in pixels.
+	 */
+	public void setBorderWidth(int borderWidth) {
+		if (terminal != null) {
+			terminal.setBorderWidth(borderWidth);
+		}
+	}
+
+	/**
+	 * Returns the current border width of the terminal component.
+	 * @return The width of the border, in pixels.
+	 */
+	public int getBorderWidth() {
+		return terminal.getBorderWidth();
 	}
 
 	/**
