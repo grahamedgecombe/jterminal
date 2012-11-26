@@ -210,9 +210,8 @@ public class Vt100TerminalModel extends AbstractTerminalModel {
 					cursorColumn = 0;
 					continue;
 				case '\n':
-					cursorColumn = 0;
 					cursorRow++;
-					continue;
+					break;
 				case '\t':
 					while ((++cursorColumn % TAB_WIDTH) != 0);
 					continue;
@@ -243,7 +242,9 @@ public class Vt100TerminalModel extends AbstractTerminalModel {
 
 				Color back = backgroundBold ? SgrColor.COLOR_BRIGHT[backgroundColor] : SgrColor.COLOR_NORMAL[backgroundColor];
 				Color fore = foregroundBold ? SgrColor.COLOR_BRIGHT[foregroundColor] : SgrColor.COLOR_NORMAL[foregroundColor];
-				cells[cursorRow][cursorColumn++] = new TerminalCell(ch, back, fore);
+				if (ch != '\n') {
+					cells[cursorRow][cursorColumn++] = new TerminalCell(ch, back, fore);
+				}
 			}
 		}
 
