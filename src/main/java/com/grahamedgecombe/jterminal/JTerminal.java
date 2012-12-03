@@ -22,10 +22,7 @@
 
 package com.grahamedgecombe.jterminal;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 
@@ -36,114 +33,15 @@ import com.grahamedgecombe.jterminal.vt100.Vt100TerminalModel;
 
 /**
  * A Swing terminal emulation component.
+ *
  * @author Graham Edgecombe
  */
 public class JTerminal extends JComponent {
 
 	/**
-	 * The component that actually draws the terminal.
-	 * @author Graham Edgecombe
+	 * Inner border width in pixels.
 	 */
-	private class Terminal extends JComponent {
-
-		/**
-		 * The cell width in pixels.
-		 */
-		private static final int CELL_WIDTH = 8;
-
-		/**
-		 * The cell height in pixels.
-		 */
-		private static final int CELL_HEIGHT = 12;
-
-		/**
-		 * Inner border width in pixels.
-		 */
-		private int borderWidth = 0;
-
-		/**
-		 * The font.
-		 */
-		private final Font font = new Font("Monospaced", Font.PLAIN, CELL_HEIGHT);
-
-		/**
-		 * The unique serial version id.
-		 */
-		private static final long serialVersionUID = 8832602559840777008L;
-
-		/**
-		 * Creates the terminal.
-		 */
-		private Terminal() {
-			setDoubleBuffered(true);
-		}
-
-		/**
-		 * @return The inner border width, in pixels.
-		 */
-		public int getBorderWidth() {
-			return borderWidth;
-		}
-
-		/**
-		 * Set the inner border width of the terminal component.
-		 * @param borderWidth The width of the border, in pixels.
-		 */
-		public void setBorderWidth(int borderWidth) {
-			this.borderWidth = borderWidth;
-			revalidate();
-		}
-
-		@Override
-		public Dimension getMinimumSize() {
-			return new Dimension(model.getColumns() * CELL_WIDTH + borderWidth * 2,
-                           model.getRows() * CELL_HEIGHT + borderWidth * 2);
-		}
-
-		@Override
-		public Dimension getMaximumSize() {
-			return getMinimumSize();
-		}
-
-		@Override
-		public Dimension getPreferredSize() {
-			return getMinimumSize();
-		}
-
-		@Override
-		public void paint(Graphics g) {
-			g.setFont(font);
-
-			int width = model.getColumns();
-			int height = model.getBufferSize();
-
-			g.setColor(model.getDefaultBackgroundColor());
-			g.fillRect(0, 0, width * CELL_WIDTH + borderWidth * 2, height * CELL_HEIGHT + borderWidth * 2);
-
-			int start = scrollBar == null ? 0 : scrollBar.getValue();
-			for (int y = start; y < height; y++) {
-				for (int x = 0; x < width; x++) {
-					TerminalCell cell = model.getCell(x, y);
-					boolean cursorHere = model.getCursorRow() == y && model.getCursorColumn() == x;
-
-					if (cursorHere && cell == null) {
-						cell = new TerminalCell(' ', model.getDefaultBackgroundColor(), model.getDefaultForegroundColor());
-					}
-
-					if (cell != null) {
-						int px = x * CELL_WIDTH + borderWidth;
-						int py = (y - start) * CELL_HEIGHT + borderWidth;
-
-						g.setColor(cursorHere ? cell.getForegroundColor() : cell.getBackgroundColor());
-						g.fillRect(px, py, CELL_WIDTH, CELL_HEIGHT);
-
-						g.setColor(cursorHere ? cell.getBackgroundColor() : cell.getForegroundColor());
-						g.drawChars(new char[] { cell.getCharacter() }, 0, 1, px, py + CELL_HEIGHT);
-					}
-				}
-			}
-		}
-	}
+	private int borderWidth = 0;
 
 	/**
 	 * The unique serial version id.
@@ -161,24 +59,177 @@ public class JTerminal extends JComponent {
 	private TerminalModel model;
 
 	/**
-	 * The current terminal component.
+	 * The font to use for this terminal.
 	 */
-	private Terminal terminal;
+	private Font font;
+
+	/**
+	 * The width of each character cell, in pixels.
+	 */
+	private int cellWidth;
+
+	/**
+	 * The height of each character cell, in pixels.
+	 */
+	private int cellHeight;
+
+	/**
+	 * The maximum descender height of a character cell, in pixels.
+	 */
+	private int maxDescender;
 
 	/**
 	 * Creates a terminal with the a new {@link Vt100TerminalModel}.
 	 */
-	public JTerminal() {
-		this(new Vt100TerminalModel());
+	public JTerminal(Font font) {
+		this(new Vt100TerminalModel(), font);
 	}
 
 	/**
 	 * Creates a terminal with the specified model.
+	 *
 	 * @param model The model.
 	 */
-	public JTerminal(TerminalModel model) {
+	public JTerminal(TerminalModel model, Font font) {
 		setModel(model);
+		setFont(font);
 		init();
+	}
+
+	/**
+	 * Set the inner border width of the terminal component.
+	 *
+	 * @param borderWidth The width of the border, in pixels.
+	 */
+	public void setBorderWidth(int borderWidth) {
+		this.borderWidth = borderWidth;
+		revalidate();
+	}
+
+	/**
+	 * @return The inner border width, in pixels.
+	 */
+	public int getBorderWidth() {
+		return borderWidth;
+	}
+
+	/**
+	 * Set the font to use for this terminal.
+	 *
+	 * Setting the font will cause the component to 
+	 * revalidate and repaint.
+	 *
+	 * @param font The font to use for this terminal.
+	 */
+	public void setFont(Font font) {
+		this.font = font;
+		setCellWidthAndHeight(font);
+		revalidate();
+	}
+
+	/**
+	 * @return the font used for this terminal
+	 */
+	public Font getFont() {
+		return font;
+	}
+
+	/**
+	 * Sets the current terminal model.
+	 *
+	 * @param model The new terminal model.
+	 * @throws NullPointerException if the model is {@code null}.
+	 */
+	public void setModel(TerminalModel model) {
+		if (model == null) {
+			throw new NullPointerException("model");
+		}
+		this.model = model;
+	}
+
+	/**
+	 * Gets the current terminal model.
+	 *
+	 * @return The current terminal model.
+	 */
+	public TerminalModel getModel() {
+		return model;
+	}
+
+	/**
+	 * Prints a line to the terminal. This method is shorthand for:
+	 * {@code getModel().print(str.concat("\r\n"));}
+	 *
+	 * @param str The string to print.
+	 * @throws NullPointerException if the string is null.
+	 */
+	public void println(String str) {
+		if (str == null) {
+			throw new NullPointerException("str");
+		}
+		print(str.concat("\r\n"));
+	}
+
+	/**
+	 * Prints a string to the terminal. This method is shorthand for:
+	 * {@code getModel().print(str);}
+	 *
+	 * @param str The string to print.
+	 * @throws NullPointerException if the string is null.
+	 */
+	public void print(String str) {
+		model.print(str);
+	}
+
+
+	@Override
+	public Dimension getMinimumSize() {
+		return new Dimension(model.getColumns() * cellWidth + borderWidth * 2,
+				model.getRows() * cellHeight + borderWidth * 2);
+	}
+
+	@Override
+	public Dimension getMaximumSize() {
+		return getMinimumSize();
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		return getMinimumSize();
+	}
+
+	@Override
+	public void paint(Graphics g) {
+		g.setFont(font);
+
+		int width = model.getColumns();
+		int height = model.getBufferSize();
+
+		g.setColor(model.getDefaultBackgroundColor());
+		g.fillRect(0, 0, width * cellWidth + borderWidth * 2, height * cellHeight + borderWidth * 2);
+
+		int start = scrollBar == null ? 0 : scrollBar.getValue();
+		for (int y = start; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				TerminalCell cell = model.getCell(x, y);
+				boolean cursorHere = model.getCursorRow() == y && model.getCursorColumn() == x;
+
+				if (cursorHere && cell == null) {
+					cell = new TerminalCell(' ', model.getDefaultBackgroundColor(), model.getDefaultForegroundColor());
+				}
+
+				if (cell != null) {
+					int px = x * cellWidth + borderWidth;
+					int py = (y - start) * cellHeight + borderWidth;
+
+					g.setColor(cursorHere ? cell.getForegroundColor() : cell.getBackgroundColor());
+					g.fillRect(px, py, cellWidth, cellHeight);
+
+					g.setColor(cursorHere ? cell.getBackgroundColor() : cell.getForegroundColor());
+					g.drawChars(new char[]{cell.getCharacter()}, 0, 1, px, py + cellHeight - maxDescender);
+				}
+			}
+		}
 	}
 
 	/**
@@ -186,7 +237,6 @@ public class JTerminal extends JComponent {
 	 */
 	private void init() {
 		setLayout(new BorderLayout(0, 0));
-		this.terminal = new Terminal();
 
 		int rows = model.getRows();
 		int bufferSize = model.getBufferSize();
@@ -202,71 +252,14 @@ public class JTerminal extends JComponent {
 			add(BorderLayout.LINE_END, scrollBar);
 		}
 
-		add(BorderLayout.CENTER, terminal);
-
 		repaint();
 	}
 
-	/**
-	 * Gets the current terminal model.
-	 * @return The current terminal model.
-	 */
-	public TerminalModel getModel() {
-		return model;
+	private void setCellWidthAndHeight(Font font) {
+		FontMetrics metrics = getFontMetrics(font);
+		cellWidth = metrics.charWidth('W');
+		cellHeight = metrics.getHeight();
+		maxDescender = metrics.getMaxDescent();
 	}
-
-	/**
-	 * Sets the border width of the current terminal component.
-	 * @param borderWidth The width of the border, in pixels.
-	 */
-	public void setBorderWidth(int borderWidth) {
-		if (terminal != null) {
-			terminal.setBorderWidth(borderWidth);
-		}
-	}
-
-	/**
-	 * Returns the current border width of the terminal component.
-	 * @return The width of the border, in pixels.
-	 */
-	public int getBorderWidth() {
-		return terminal.getBorderWidth();
-	}
-
-	/**
-	 * Sets the current terminal model.
-	 * @param model The new terminal model.
-	 * @throws NullPointerException if the model is {@code null}.
-	 */
-	public void setModel(TerminalModel model) {
-		if (model == null) {
-			throw new NullPointerException("model");
-		}
-		this.model = model;
-	}
-
-	/**
-	 * Prints a line to the terminal. This method is shorthand for:
-	 * {@code getModel().print(str.concat("\r\n"));}
-	 * @param str The string to print.
-	 * @throws NullPointerException if the string is null.
-	 */
-	public void println(String str) {
-		if (str == null) {
-			throw new NullPointerException("str");
-		}
-		print(str.concat("\r\n"));
-	}
-
-	/**
-	 * Prints a string to the terminal. This method is shorthand for:
-	 * {@code getModel().print(str);}
-	 * @param str The string to print.
-	 * @throws NullPointerException if the string is null.
-	 */
-	public void print(String str) {
-		model.print(str);
-	}
-
 }
 
