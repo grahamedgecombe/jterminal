@@ -215,6 +215,7 @@ public class Vt100TerminalModel extends AbstractTerminalModel {
 				case '\t':
 					while ((++cursorColumn % TAB_WIDTH) != 0);
 					continue;
+				case 8:
 				case 127:
 					if (cursorColumn > 0) {
 						cells[cursorRow][--cursorColumn] = null;
