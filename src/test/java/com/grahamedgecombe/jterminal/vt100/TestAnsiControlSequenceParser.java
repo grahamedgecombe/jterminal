@@ -222,5 +222,116 @@ public class TestAnsiControlSequenceParser implements AnsiControlSequenceListene
 		objects.add(str);
 	}
 
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test0()  throws Throwable  {
+		String[] stringArray0 = new String[1];
+		stringArray0[0] = "fxV<|9*0{9P<";
+		AnsiControlSequence ansiControlSequence0 = new AnsiControlSequence('\"', stringArray0);
+		char char0 = ansiControlSequence0.getCommand();
+		assertEquals('\"', char0);
+	}
+
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test1()  throws Throwable  {
+		String[] stringArray0 = new String[0];
+		AnsiControlSequence ansiControlSequence0 = new AnsiControlSequence('0', stringArray0);
+		char char0 = ansiControlSequence0.getCommand();
+		assertEquals('0', char0);
+	}
+
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test2()  throws Throwable  {
+		String[] stringArray0 = new String[1];
+		stringArray0[0] = "";
+		AnsiControlSequence ansiControlSequence0 = new AnsiControlSequence('w', stringArray0);
+		assertEquals('w', ansiControlSequence0.getCommand());
+	}
+
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test3()  throws Throwable  {
+		String[] stringArray0 = new String[1];
+		stringArray0[0] = "y_n$";
+		AnsiControlSequence ansiControlSequence0 = new AnsiControlSequence('y', stringArray0);
+		ansiControlSequence0.getParameters();
+		assertEquals('y', ansiControlSequence0.getCommand());
+	}
+
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test4()  throws Throwable  {
+		String[] stringArray0 = new String[1];
+		AnsiControlSequence ansiControlSequence0 = null;
+		try {
+			ansiControlSequence0 = new AnsiControlSequence('4', stringArray0);
+			fail("Expecting exception: NullPointerException");
+
+		} catch(NullPointerException ignored) {
+		}
+	}
+
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test6()  throws Throwable  {
+		String[] stringArray0 = new String[0];
+		AnsiControlSequence ansiControlSequence0 = new AnsiControlSequence('B', stringArray0);
+		ansiControlSequence0.getParameters();
+		assertEquals('B', ansiControlSequence0.getCommand());
+	}
+
+	/**
+	 * EvoSuite-Generated Test
+	 * @throws Throwable
+	 */
+	@Test(timeout = 4000)
+	public void test7()  throws Throwable  {
+		String[] stringArray0 = new String[0];
+		AnsiControlSequence ansiControlSequence0 = new AnsiControlSequence('B', stringArray0);
+		char char0 = ansiControlSequence0.getCommand();
+		assertEquals('B', char0);
+	}
+
+    /**
+     * EvoSuite-Generated Test
+     * @throws Throwable
+     */
+    @Test(timeout = 4000)
+    public void test8()  throws Throwable  {
+        TestAnsiControlSequenceParser testAnsiControlSequenceParser0 = new TestAnsiControlSequenceParser();
+        AnsiControlSequenceParser ansiControlSequenceParser0 = new AnsiControlSequenceParser(testAnsiControlSequenceParser0);
+        // Undeclared exception!
+        try {
+            ansiControlSequenceParser0.parse((String) null);
+            fail("Expecting exception: NullPointerException");
+
+        } catch(NullPointerException e) {
+            //
+            // no message in exception (getMessage() returned null)
+            //
+        }
+    }
+
+
 }
 
