@@ -77,7 +77,7 @@ public class TestVt100TerminalModel {
 
 		model.print("\na");
 		assertEquals('c', model.getCell(0, 0).getCharacter());
-		assertEquals('a', model.getCell(0, 1).getCharacter());
+		assertEquals('a', model.getCell(1, 1).getCharacter());
 
 		model.print("\u007F");
 		assertNull(model.getCell(0, 1));
